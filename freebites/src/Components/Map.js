@@ -3,6 +3,7 @@ import { Platform, Text, View, StyleSheet } from "react-native";
 import Device from "expo-device";
 import * as Location from "expo-location";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+//import Geolocation from '@react-native-community/geolocation';
 
 export default function Map() {
     const [location, setLocation] = useState(null);
@@ -17,25 +18,19 @@ export default function Map() {
 
     useEffect(() => {
         (async () => {
-            if (Platform.OS === "android" && !Device.isDevice) {
-                setErrorMsg(
-                    "Oops, this will not work on Snack in an Android Emulator. Try it on your device!"
-                );
-                return;
-            }
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
                 setErrorMsg("Permission to access location was denied");
                 return;
             }
 
+            // Get user's current location
             let location = await Location.getCurrentPositionAsync({});
-            setLocation(location);
             setPosition({
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.0421,
-                longitudeDelta: 0.0421,
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
             });
         })();
     }, []);
@@ -51,7 +46,6 @@ export default function Map() {
         <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.map}
-            initialRegion={position}
             showsUserLocation={true}
             showsMyLocationButton={true}
             followsUserLocation={true}
@@ -59,12 +53,10 @@ export default function Map() {
             scrollEnabled={true}
             zoomEnabled={true}
             pitchEnabled={true}
-            rotateEnabled={true}>
-            <Marker
-                title="Yor are here"
-                description="This is a description"
-                coordinate={position}
-            />
+            showsTraffic={true}
+            rotateEnabled={true}
+            loadingEnabled={true}
+            region={position}>
         </MapView>
     );
     // return (
